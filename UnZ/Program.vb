@@ -293,7 +293,7 @@ Module Program
                     showGrammar = True
                     allSections = False
                 Case "-h", "--help", "\?"
-                    Console.Error.WriteLine("UnZ 0.10 (2024-02-17) by Henrik Åsman, (c) 2021-2024")
+                    Console.Error.WriteLine("UnZ 0.10 (2024-02-17) by Henrik Ã…sman, (c) 2021-2024")
                     Console.Error.WriteLine("Usage: unz [option] [file]")
                     Console.Error.WriteLine("Unpack Z-machine file format information.")
                     Console.Error.WriteLine()
@@ -1536,9 +1536,6 @@ Module Program
                 Dim iAddrProperties As Integer = 0
                 Do
                     If Not createGametext Then
-                        If iObject = 74 Then
-                            Stop
-                        End If
                         Console.WriteLine("Object: {0}", iObject + 1)
                         Console.Write("{0:X5} ", iAddrObjectTreeStart + iObject * iObjectTreeEntryLen)
                         ' print attributes

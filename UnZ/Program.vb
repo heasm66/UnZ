@@ -231,6 +231,7 @@ Module Program
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Games\Infocom\Suspect\Suspect.dat"
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Games\Infocom\deadline\deadline.dat"
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Games\Infocom\suspended\suspended.dat"
+        'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Games\Other\Nelson, Graham\Curses!\curses-r7.z3"
 
         ' ZILCH, grammar version 1 with COMPACT-SYNTAXES?
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Games\Infocom\Minizork\minizork.z3"
@@ -293,7 +294,7 @@ Module Program
                     showGrammar = True
                     allSections = False
                 Case "-h", "--help", "\?"
-                    Console.Error.WriteLine("UnZ 0.10 (2024-02-17) by Henrik Ã…sman, (c) 2021-2024")
+                    Console.Error.WriteLine("UnZ 0.11 (2024-02-18) by Henrik Åsman, (c) 2021-2024")
                     Console.Error.WriteLine("Usage: unz [option] [file]")
                     Console.Error.WriteLine("Unpack Z-machine file format information.")
                     Console.Error.WriteLine()
@@ -413,6 +414,13 @@ Module Program
 
         byteStory = IO.File.ReadAllBytes(sFile)
 
+        iZVersion = byteStory(0)
+        If iZVersion > 8 Then
+            Console.Error.WriteLine("Unknown z-machine version, {0}.", iZVersion)
+            Console.Error.WriteLine("Try 'unz -h' for more information.")
+            Exit Sub
+        End If
+
         If Not createGametext Then
             Console.WriteLine()
             Console.WriteLine("***** ANALYZING *****")
@@ -439,16 +447,11 @@ Module Program
         If Not createGametext Then
             Console.WriteLine("Compiled With:                             {0}", sCompilerSource)
         End If
+        Console.WriteLine("Z-machine version:                         {0}", iZVersion)
 
         ' ****************************
         ' ***** Build memory map *****
         ' ****************************
-        iZVersion = byteStory(0)
-        If iZVersion > 8 Then
-            Console.Error.WriteLine("Unknown z-machine version, {0}.", iZVersion)
-            Console.Error.WriteLine("Try 'unz -h' for more information.")
-            Exit Sub
-        End If
 
         Dim iLengthFile As Integer = Helper.GetAdressFromWord(byteStory, 26)
         iLengthFile *= 2
@@ -945,7 +948,7 @@ Module Program
                     ElseIf grammarVer = 2 Then
                         ' Inform, grammar ver 2
                         ' Don't use either preaction or preposition table. There is two 00 bytes as placeholder for preposition table, though
-                        memoryMap.Add(New MemoryMapEntry("Preposition/Adjective table (empty)", iAddrPreActionTable, iAddrPreActionTable + 1, MemoryMapType.MM_PREPOSITION_TABLE))
+                        memoryMap.Add(New MemoryMapEntry("Preposition/Adjective table", iAddrPreActionTable, iAddrPreActionTable + 1, MemoryMapType.MM_PREPOSITION_TABLE))
                     End If
                 End If
             End If
@@ -1333,7 +1336,7 @@ Module Program
                     Console.WriteLine("***** HEADER EXTENSION TABLE ({0:X5}-{1:X5}, {2}) *****", iAddrHeaderExtStart, iAddrHeaderExtStart + iHeaderExtLen * 2 + 1, oMemEntry.SizeString)
                     If showHex Then HexDump(iAddrHeaderExtStart, iAddrHeaderExtStart + iHeaderExtLen * 2 + 1, True)
                     Console.WriteLine()
-                    Console.WriteLine("{0:X5} {1:X2} {2:X2}                   Number of further words:             {3}", iAddrHeaderExtStart, byteStory(iAddrHeaderExtStart), byteStory(iAddrHeaderExtStart + 1), iHeaderExtLen)
+                    Console.WriteLine("{0:X5} {1:X2} {2:X2}                   Number of further words:                  {3}", iAddrHeaderExtStart, byteStory(iAddrHeaderExtStart), byteStory(iAddrHeaderExtStart + 1), iHeaderExtLen)
                     For i As Integer = 1 To iHeaderExtLen
                         Select Case i
                             Case 1
@@ -1972,6 +1975,7 @@ Module Program
                     ' Inform5, ver 1   : Variable size. First word = number of entries then follows entries of 4 bytes where
                     '                    first word is dictionary-address and second word is adjective/preposition number. 
                     '                    Entries is ordered lowest number to highest.
+                    '                    Curses_r7 have a broken table here.
                     ' Inform6, ver 1   : Same as Inform5, ver 1.
                     ' Inform6, ver 2   : Isn't used. Contains two 00 bytes as placeholders.
                     ' Zilf/Zilch, ver 1: Variable size. First word = number of entries then follows entries of 4 bytes where
@@ -2013,11 +2017,18 @@ Module Program
                             Dim currentAddress As Integer = oMemEntry.addressStart + 2 + i * 4
                             Dim prepAddress As Integer = Helper.GetAdressFromWord(byteStory, currentAddress)
                             Dim prepID As Integer = byteStory(oMemEntry.addressStart + 5 + i * 4)
-                            Dim preposition As String = DictEntriesList.GetEntryAtAddress(prepAddress).dictWord
+                            Dim preposition As String
+                            Dim errMsg As String = ""
+                            Try
+                                preposition = DictEntriesList.GetEntryAtAddress(prepAddress).dictWord
+                            Catch
+                                preposition = DictEntriesList.GetPreposition(prepID)(0).dictWord
+                                errMsg = " (Incomplete table entry, word taken from dictionary instead.)"
+                            End Try
                             If compilerSource = EnumCompilerSource.ZILCH Or compilerSource = EnumCompilerSource.ZILF Then
                                 Console.Write("{0:X5} {1:X2} {2:X2} {3:X2} {4:X2}              Preposition #{5}: {6}", currentAddress, byteStory(currentAddress), byteStory(currentAddress + 1), byteStory(currentAddress + 2), byteStory(currentAddress + 3), byteStory(currentAddress + 3), preposition.ToUpper)
                             Else
-                                Console.Write("{0:X5} {1:X2} {2:X2} {3:X2} {4:X2}              Preposition #{5}: '{6}'", currentAddress, byteStory(currentAddress), byteStory(currentAddress + 1), byteStory(currentAddress + 2), byteStory(currentAddress + 3), byteStory(currentAddress + 3), preposition)
+                                Console.Write("{0:X5} {1:X2} {2:X2} {3:X2} {4:X2}              Preposition #{5}: '{6}'{7}", currentAddress, byteStory(currentAddress), byteStory(currentAddress + 1), byteStory(currentAddress + 2), byteStory(currentAddress + 3), byteStory(currentAddress + 3), preposition, errMsg)
                             End If
                             If DictEntriesList.GetPreposition(prepID).Count > 1 Then
                                 If compilerSource = EnumCompilerSource.ZILCH Or compilerSource = EnumCompilerSource.ZILF Then
@@ -2825,18 +2836,24 @@ Module Program
         Next
         Dim iAddr As Integer = 0
         Dim bFound As Boolean
+        Dim maxMatch As Integer = 0
+        Dim maxMatchAddress As Integer = 0
         Do
             bFound = True
             For i = 0 To footprintList.Count - 1
                 If byteStory(iAddr + i) <> footprintList(i) Then
                     bFound = False
+                    If i > maxMatch Then
+                        maxMatch = i
+                        maxMatchAddress = iAddr
+                    End If
                     Exit For
                 End If
             Next
-            If bFound Then Return iAddr - 2
+            If bFound Then Return iAddr - 2         ' Found perfect match
             iAddr += 1
         Loop Until iAddr > byteStory.Length - 100
-        Return 0
+        Return maxMatchAddress - 2          ' No perfect match, return best match. Curses_r7 have misformed table here
     End Function
 
     Public ZilPropDirectionList As New List(Of Integer)
@@ -3192,7 +3209,10 @@ Module Program
                     Dim adjectiveCount As Integer = Helper.GetAdressFromWord(byteStory, adjectiveTableStart)
                     For adjIdx As Integer = 0 To adjectiveCount - 1
                         If byteStory(adjectiveTableStart + 5 + adjIdx * 4) = byteStory(i) Then
-                            sRet = String.Concat(sRet, " '", dictEntriesList.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, adjectiveTableStart + 2 + adjIdx * 4)).dictWord, "'")
+                            Dim dictEntry As DictionaryEntry = dictEntriesList.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, adjectiveTableStart + 2 + adjIdx * 4))
+                            Dim prep As String
+                            If dictEntry IsNot Nothing Then prep = dictEntry.dictWord Else prep = dictEntriesList.GetPreposition(byteStory(i))(0).dictWord
+                            sRet = String.Concat(sRet, " '", prep, "'")
                             Exit For
                         End If
                     Next

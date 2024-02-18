@@ -1,3 +1,4 @@
+```
 UnZ 0.11 (2024-02-18) by Henrik Åsman, (c) 2021-2024  
 Usage: unz [option] [file]  
 Unpack Z-machine file format information.  
@@ -24,4 +25,5 @@ Unpack Z-machine file format information.
  -z <hexaddress>    Show the single decompiled z-code routine at <hexaddress>  
   
 Report bugs/suggestions to: heasm66@gmail.com  
-UnZ homepage: https://github.com/heasm66/UnZ  
+UnZ homepage: https://github.com/heasm66/UnZ
+```

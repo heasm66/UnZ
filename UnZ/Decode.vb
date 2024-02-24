@@ -1,4 +1,26 @@
-﻿Imports System.Net
+﻿'MIT License
+
+'Copyright(c) 2021-2024 Henrik Åsman
+
+'Permission Is hereby granted, free Of charge, to any person obtaining a copy
+'of this software And associated documentation files (the "Software"), to deal
+'in the Software without restriction, including without limitation the rights
+'to use, copy, modify, merge, publish, distribute, sublicense, And/Or sell
+'copies of the Software, And to permit persons to whom the Software Is
+'furnished to do so, subject to the following conditions:
+
+'The above copyright notice And this permission notice shall be included In all
+'copies Or substantial portions of the Software.
+
+'THE SOFTWARE Is PROVIDED "AS IS", WITHOUT WARRANTY Of ANY KIND, EXPRESS Or
+'IMPLIED, INCLUDING BUT Not LIMITED To THE WARRANTIES Of MERCHANTABILITY,
+'FITNESS FOR A PARTICULAR PURPOSE And NONINFRINGEMENT. IN NO EVENT SHALL THE
+'AUTHORS Or COPYRIGHT HOLDERS BE LIABLE For ANY CLAIM, DAMAGES Or OTHER
+'LIABILITY, WHETHER In AN ACTION Of CONTRACT, TORT Or OTHERWISE, ARISING FROM,
+'OUT OF Or IN CONNECTION WITH THE SOFTWARE Or THE USE Or OTHER DEALINGS IN THE
+'SOFTWARE.
+
+Imports System.Net
 
 Public Class Decode
     Public startAddress As Integer = 0
@@ -8,6 +30,7 @@ Public Class Decode
     Public lowest_routine As Integer = Integer.MaxValue
     Public lowest_string As Integer = Integer.MaxValue
     Public highest_global As Integer = -1
+    Public callsTo As New List(Of CallsFromTo)
     Private ZVersion As Integer = 0
     Private PC As Integer = 0
     Private byteGame() As Byte
@@ -23,6 +46,7 @@ Public Class Decode
     Private propertyMin As Integer = 0
     Private showAbbrevsInsertion As Boolean = True
     Private inlineStrings As List(Of InlineString)
+    Public arraysStart As New HashSet(Of Integer)
 
     Public Enum EnumOpcodeClass
         EXTENDED_OPERAND
@@ -127,9 +151,33 @@ Public Class Decode
 
         If Not bSilent Then
             If initialPC - 1 = PC Then
-                Console.WriteLine("Main routine: 0x{0:X4}", PC)
+                Console.Write("Main routine: 0x{0:X5}", PC)
             Else
-                Console.WriteLine("Routine: 0x{0:X4}", PC)
+                Console.Write("Routine: 0x{0:X5}", PC)
+            End If
+            Dim oRoutineData As RoutineData = validRoutineList.Find(Function(c) c.entryPoint = PC)
+            If oRoutineData IsNot Nothing Then
+                Dim first As Boolean = True
+                For Each callFrom As String In oRoutineData.callsFrom
+                    If first Then Console.Write(Space(15)) Else Console.Write(Space(31))
+                    If callFrom.Length > 97 Then
+                        Console.WriteLine(callFrom.Substring(0, 98))
+                        Dim sRest As String = callFrom.Substring(98).Trim
+                        Do
+                            If sRest.Length > 71 Then
+                                Console.WriteLine("{0}{1}", Space(57), sRest.Substring(0, 72).Trim)
+                                sRest = sRest.Substring(72).Trim
+                            Else
+                                Console.WriteLine("{0}{1}", Space(57), sRest)
+                                sRest = ""
+                            End If
+                        Loop Until sRest = ""
+                    Else
+                        Console.WriteLine(callFrom)
+                    End If
+                    first = False
+                Next
+                If oRoutineData.callsFrom.Count = 0 Then Console.WriteLine()
             End If
             If ZVersion > 4 Then
                 If localsCount = 0 Then Console.WriteLine("{0:X5} {1:X2}                       No locals", PC, localsCount)
@@ -185,6 +233,7 @@ Public Class Decode
         Dim low_routine_old As Integer = lowest_routine
         Dim lowest_string_old As Integer = lowest_string
 
+        callsTo.Clear()
         Do
             oDecodeResult = DecodeCode(PC)
             PC = oDecodeResult.nextPC
@@ -193,6 +242,7 @@ Public Class Decode
                 highest_routine = high_routine_old
                 lowest_routine = low_routine_old
                 lowest_string = lowest_string_old
+                callsTo.Clear()
                 Return -1
             End If
 
@@ -770,6 +820,7 @@ Public Class Decode
             End If
             If routine_address > highest_routine Then highest_routine = routine_address
             If routine_address > 0 And routine_address < lowest_routine Then lowest_routine = routine_address
+            callsTo.Add(New CallsFromTo With {.fromAddress = startAddress, .toAddress = routine_address})
         End If
 
         ' Find call to packed string with lowest address
@@ -848,6 +899,17 @@ Public Class Decode
                         pOpcode.OperandText = pOpcode.OperandText & " " & Convert.ToChar(34) & dictEntry.dictWord & Convert.ToChar(34)
                     Else
                         pOpcode.OperandText = pOpcode.OperandText & " " & TextNumber(operandVal, pOpcode.OperandLen(i), False)
+                        If bSilent Then
+                            ' Collect all possible startpoints for an array
+                            If operandVal > 0 Then
+                                If (pOpcode.OpcodeClass = EnumOpcodeClass.TWO_OPERAND And (pOpcode.Code And &H1F) = &HF) Or             ' LOADB
+                                   (pOpcode.OpcodeClass = EnumOpcodeClass.TWO_OPERAND And (pOpcode.Code And &H1F) = &H10) Or            ' LOADW
+                                   (pOpcode.OpcodeClass = EnumOpcodeClass.VARIABLE_OPERAND And (pOpcode.Code And &H3F) = &H21) Or       ' STOREB
+                                   (pOpcode.OpcodeClass = EnumOpcodeClass.VARIABLE_OPERAND And (pOpcode.Code And &H3F) = &H22) Then     ' STOREW
+                                    arraysStart.Add(operandVal)
+                                End If
+                            End If
+                        End If
                     End If
                 Case EnumOperand.P_NIL
                     pOpcode.OperandText &= " Illegal_parameter"
@@ -877,7 +939,7 @@ Public Class Decode
                     If syntax = 1 Then sDirOut = sDirOut.ToLower
                     pOpcode.OperandText = pOpcode.OperandText & " " & sDirOut
                 Case EnumOperand.P_PCHAR
-                    Dim character As Char = Char.ConvertFromUtf32(operandVal)
+                    Dim character As Char = CChar(Char.ConvertFromUtf32(operandVal))
                     If Not Char.IsControl(character) Then
                         pOpcode.OperandText = pOpcode.OperandText & " '" & character & "'"
                     Else

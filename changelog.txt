@@ -1,0 +1,17 @@
+0.10 2024-02-17
+---------------
+  * Initial commit.
+  
+0.11 2024-02-18
+---------------
+  * Minor bug fixes and error handling.
+  * Handle corrupt adjective table (Curses_r7) for Inform5_ver1 grammar.
+
+0.12 2024-02-24
+---------------
+  * Call without options or file prints help (same as -h).
+  * Cosmetic changes to printing in the objects section.
+  * List calls from property, action and preaction/parsing in 
+    z-code routine header.
+  * List possible startingpoint for arrays in "undentified data",
+    collected from opcodes loadb, loadw, storeb, storew and globals.

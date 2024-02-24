@@ -1,4 +1,26 @@
-﻿Public Enum EnumCompilerSource
+﻿'MIT License
+
+'Copyright(c) 2021-2024 Henrik Åsman
+
+'Permission Is hereby granted, free Of charge, to any person obtaining a copy
+'of this software And associated documentation files (the "Software"), to deal
+'in the Software without restriction, including without limitation the rights
+'to use, copy, modify, merge, publish, distribute, sublicense, And/Or sell
+'copies of the Software, And to permit persons to whom the Software Is
+'furnished to do so, subject to the following conditions:
+
+'The above copyright notice And this permission notice shall be included In all
+'copies Or substantial portions of the Software.
+
+'THE SOFTWARE Is PROVIDED "AS IS", WITHOUT WARRANTY Of ANY KIND, EXPRESS Or
+'IMPLIED, INCLUDING BUT Not LIMITED To THE WARRANTIES Of MERCHANTABILITY,
+'FITNESS FOR A PARTICULAR PURPOSE And NONINFRINGEMENT. IN NO EVENT SHALL THE
+'AUTHORS Or COPYRIGHT HOLDERS BE LIABLE For ANY CLAIM, DAMAGES Or OTHER
+'LIABILITY, WHETHER In AN ACTION Of CONTRACT, TORT Or OTHERWISE, ARISING FROM,
+'OUT OF Or IN CONNECTION WITH THE SOFTWARE Or THE USE Or OTHER DEALINGS IN THE
+'SOFTWARE.
+
+Public Enum EnumCompilerSource
     ZILCH
     ZILF
     INFORM5
@@ -52,7 +74,7 @@ Public Class Helper
         'Dim offset As Integer = GetAdressFromWord(byteGame, &H28)
         'If Not IsRoutine Then offset = GetAdressFromWord(byteGame, &H2A)
         'offset = offset * 8
-        Return Math.Truncate((address + scaler - 1) / scaler) * scaler ' - offset
+        Return CInt(Math.Truncate((address + scaler - 1) / scaler) * scaler) ' - offset
     End Function
 
     Public Shared Function ExtractZString(byteGame() As Byte, piStringAddress As Integer, sAbbreviations() As String, pAlphabet() As String, Optional pbHighlightAbbrevs As Boolean = False) As String
@@ -67,9 +89,9 @@ Public Class Helper
 
         Do
             iWord = byteGame(piStringAddress + iCounter) * 256 + byteGame(piStringAddress + iCounter + 1)
-            bLastW = iWord And 32768
+            bLastW = CBool(iWord And 32768)
             For i As Integer = 2 To 0 Step -1
-                Dim iZChar As Integer = (iWord And ((32 ^ i) * 31)) / (32 ^ i)
+                Dim iZChar As Integer = CInt((iWord And CInt(((32 ^ i) * 31))) / (32 ^ i))
                 If iAbbrevTable > -1 Then
                     ' Insert abbreviation
                     If pbHighlightAbbrevs Then
@@ -141,8 +163,13 @@ Public Class RoutineData
     Public entryPoint As Integer = 0
     Public endPoint As Integer = 0
     Public entryPointPacked As Integer = 0
+    Public callsFrom As New List(Of String)
 End Class
 
+Public Class CallsFromTo
+    Public fromAddress As Integer
+    Public toAddress As Integer
+End Class
 Public Class InlineString
     Public text As String = ""
     Public size As Integer = 0

@@ -1,82 +1,29 @@
+'MIT License
+
+'Copyright(c) 2021-2024 Henrik Åsman
+
+'Permission Is hereby granted, free Of charge, to any person obtaining a copy
+'of this software And associated documentation files (the "Software"), to deal
+'in the Software without restriction, including without limitation the rights
+'to use, copy, modify, merge, publish, distribute, sublicense, And/Or sell
+'copies of the Software, And to permit persons to whom the Software Is
+'furnished to do so, subject to the following conditions:
+
+'The above copyright notice And this permission notice shall be included In all
+'copies Or substantial portions of the Software.
+
+'THE SOFTWARE Is PROVIDED "AS IS", WITHOUT WARRANTY Of ANY KIND, EXPRESS Or
+'IMPLIED, INCLUDING BUT Not LIMITED To THE WARRANTIES Of MERCHANTABILITY,
+'FITNESS FOR A PARTICULAR PURPOSE And NONINFRINGEMENT. IN NO EVENT SHALL THE
+'AUTHORS Or COPYRIGHT HOLDERS BE LIABLE For ANY CLAIM, DAMAGES Or OTHER
+'LIABILITY, WHETHER In AN ACTION Of CONTRACT, TORT Or OTHERWISE, ARISING FROM,
+'OUT OF Or IN CONNECTION WITH THE SOFTWARE Or THE USE Or OTHER DEALINGS IN THE
+'SOFTWARE.
+
 Imports System
+Imports System.Net
 Imports System.Reflection.Metadata
-
-'ToDo:
-' * Disassemble
-' OK     - Three different syntaxes
-' OK          -a0 TXD default (default)
-' OK          -a2 ZAPF
-'     - Write object description for objects in parentesis if lookup is missing
-'     - two-complement values for constants
-' * Decompile grammar for both Inform & ZIL syntax.
-' OK     - ZIL 1 (Zork 1-3,...)
-' OK     - ZIL 2 (New parser)
-' OK     - INF 1 (Inform -5, action and pre-action (parser) of same length)
-' OK     - INF 1 (Inform 6 action and parser table of different length
-' OK     - INF 2 (Inform 6)
-'     - ZIL 2 for z3
-'     - DLG
-' * Format properties ZIL/Inform
-'     - Identify static values (word that are not routine, string, dict-word or pointing to "Data Fragment")
-' * Allow a lookup-file that translates to real names for properties, attributes, routines and more
-' * Properties ZIL:
-'     - Identify THINGS, see format in pseudo.zil (zillib)
-'     - ERROR: Trinity, SEE-N and similiar properties. List objects but same size.      
-'     - ERROR: Trinity, VALUES are bigger than 255
-'     - ERROR: Craverly_Heights_Zil, PRONOUNS
-'     - ERROR: Craverly_Heights_Zil, GLOBAL. List objects but same size.
-'     - Ambiguity?
-' * Be consitent with decimal numbers and hex numbers
-' OK * Abbreviation table: print decoded data
-' * Unify hexdump for object tree table and object properties tables
-' OK * Switch to turn on/off hexdump, ex (-d or -nohex)
-' * WinForms-variant
-'     - Details of opcodes and operands 
-'     - Links to routines
-'     - Name properties, attributes, objects and globals
-' OK * Export only text to a gametext.txt format
-' OK      G   Inline text
-' OK      H   High string
-' OK      I   Info
-' OK      O   Object description
-' OK * OK Switch to disassemble single routine
-' OK -a                abbreviations
-' OK -d                dictionary
-' OK -f                full (default)
-' OK -g                grammar
-' OK -i                header
-' OK -m                memory map
-' OK -o                objects
-' OK -s                strings
-' OK -u                unidentified
-' OK -v                variables
-' OK -x                extra (terminiating characters, )
-' OK -z                z-code
-' OK -z <address>      decode one routine
-' OK --syntax 0/txd    TXD default (default)
-' OK         1/inform TXD alternative (txd -a)
-' OK          2/zap    ZAP
-' OK --hexdump         
-' OK --gametext        creates a 'gametext.txt'
-' OK * Collect list of used globals from z-code
-' * Collect list of potential array-starts from z-code, globals & properties
-' * There's a slight difference between grammar tables for Zilch-compiled? and Zilf-compiled. This
-'   can be used to differentiate them apart.
-' OK * switch to show/hide how abbreviations are applied (default = show).
-' * Decompile to some sort of pseudo-code. if..then..else, for..next, switch... instead of branching.
-' OK *Identify/print COMPACT-SYNTAX for ZIL, version 1 (mini1, mini2 & Sherlock
-' * Print synonyms in preposition table
-' OK * Action & preaction table for Zil, ver 1
-' OK * Identify IFID-GUID
-' OK * Suspended, Zilch - Unidentified data at start of high memory?
-' OK * AMFV, Zilch - Unidentified data at start of high memory?
-' OK * Print start of Dynamic, Static and High memory
-' OK * Split grammar tables
-' OK * Convert 1-7 00 bytes, depending of version, before first z-code to padding
-' OK * Grammar table data wrongly formatted for Infoerm, ver 2
-' OK * Action table, missing last action for Inform, ver 2
-' * Add small explaination to each section, maybe only in help
-
+Imports Microsoft
 
 ' ZILCH, grammar version 1
 '   All Infocom except Mini-Zork 1, Sherlock, Abyss, Zork Zero, Shogun & Arthur
@@ -211,7 +158,6 @@ Module Program
         'sFilename = "games\zilf_ver1\craverlyheights_zil.z3"
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Source\Inform6\Source\Galatea\galatea.z8"
         'sFilename = "games\zilf_ver1\craverlyheights_zil_ver_0_9.z5"
-        'sFilename = "games\Inform6_ver2\craverlyheights_puny.z5"
         'sFilename = "games\zilf_ver1\craverlyheights_zil_ver_0_10.z5"
         'sFilename = "games\craverlyheights_dg.z5"
         'sFilename = "games\Dorm Game.z3"
@@ -223,6 +169,7 @@ Module Program
         ' ZILF, grammar version 1
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Source\ZAbbrevMaker_benchmarks\heart-of-ice-master\src\heartice.z5"
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Source\ZAbbrevMaker_benchmarks\zork1\zork1.z3"
+        'sFilename = "games\zilf_ver1\craverlyheights_zil_ver_0_10.z5"
 
         ' ZILCH, grammar version 1
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Games\Infocom\Wishbringer\wishbringer.dat"
@@ -252,6 +199,7 @@ Module Program
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Source\ZAbbrevMaker_benchmarks\dorm_test\dorm_test.z3"
         'sFilename = "C:\Users\heasm\OneDrive\Dokument\Interactive Fiction\Source\ZAbbrevMaker_benchmarks\tristam-island-main\tristam-en.z3"
         'sFilename = "C:\Users\heasm\source\repos\UnZ\UnZ\games\Inform6_ver2\gostak.z5"
+        'sFilename = "games\Inform6_ver2\craverlyheights_puny.z5"
 
         ' ***** Unpack parameters *****
         ' A bit of a poor mans GetOpt. Should probable be replaced by a NuGet-libary...
@@ -277,6 +225,7 @@ Module Program
                 unpackedArgs.Add(args(i))
             End If
         Next
+        If unpackedArgs.Count = 0 Then unpackedArgs.Add("-h")
 
         ' Parse arguments
         Dim allSections As Boolean = True
@@ -294,7 +243,7 @@ Module Program
                     showGrammar = True
                     allSections = False
                 Case "-h", "--help", "\?"
-                    Console.Error.WriteLine("UnZ 0.11 (2024-02-18) by Henrik Åsman, (c) 2021-2024")
+                    Console.Error.WriteLine("UnZ 0.12 (2024-02-24) by Henrik Åsman, (c) 2021-2024")
                     Console.Error.WriteLine("Usage: unz [option] [file]")
                     Console.Error.WriteLine("Unpack Z-machine file format information.")
                     Console.Error.WriteLine()
@@ -811,6 +760,7 @@ Module Program
         Dim totalPadding As Integer = 0
         If iZVersion = 6 Then iAddrInitialPC = iAddrInitialPC * scaler + iFOFF ' In version 6 the address is packed
         Dim oDecode As New Decode
+        Dim routineCallsFromTo As New List(Of CallsFromTo)
         Do
             Dim inlineStringCountBefore = inlineStrings.Count
             iNext = oDecode.DecodeRoutine(iStart, byteStory, sAbbreviations, True, zcodeSyntax, validStringsList,
@@ -819,8 +769,9 @@ Module Program
                 Dim oRoutineData As New RoutineData With {
                     .entryPoint = iStart,
                     .endPoint = iNext - 1,
-                    .entryPointPacked = (iStart - iFOFF) / scaler
+                    .entryPointPacked = (iStart - iFOFF) \ scaler
                 }
+                routineCallsFromTo.AddRange(oDecode.callsTo)        ' Concatinate calls
                 validRoutinesList.Add(oRoutineData)
                 Dim inlineStringCountAfter As Integer = inlineStrings.Count
                 If inlineStringCountAfter <> inlineStringCountBefore Then
@@ -843,6 +794,21 @@ Module Program
                 iStart += scaler
             End If
         Loop Until iStart >= iLengthFile - 1 Or (iNext < 0 AndAlso validRoutinesList.Count > 1 AndAlso iStart > oDecode.highest_routine AndAlso iStart > iAddrInitialPC)
+
+        ' Prepare list of CallsFrom for each routine
+        For i = 0 To routineCallsFromTo.Count - 1
+            Dim routineCall As CallsFromTo = routineCallsFromTo(i)
+            Dim validRoutineData As RoutineData = validRoutinesList.Find(Function(c) c.entryPoint = routineCall.toAddress)
+            If validRoutineData IsNot Nothing Then
+                Dim routineString As String = routineCall.fromAddress.ToString("X5")
+                If validRoutineData.callsFrom.Count > 0 AndAlso Not validRoutineData.callsFrom(0).Contains(routineString) Then
+                    validRoutineData.callsFrom(0) = String.Concat(validRoutineData.callsFrom(0), ", 0x", routineCall.fromAddress.ToString("X5"))
+                ElseIf validRoutineData.callsFrom.Count = 0 Then
+                    validRoutineData.callsFrom.Add(String.Concat("Called from routine(s) at 0x", routineCall.fromAddress.ToString("X5")))
+                End If
+            End If
+        Next
+
         If Not createGametext Then
             Console.WriteLine("Scanning for routines from:                0x{0:X5}", iCodeBase)
             Console.WriteLine("Found first routine at address:            0x{0:X5}", validRoutinesList(0).entryPoint)
@@ -877,11 +843,11 @@ Module Program
             stringCount += 1
             Dim oStringData As New StringData With {
                 .number = stringCount,
-                .name = "S" & stringCount.ToString.PadLeft(4, "0"),
+                .name = "S" & stringCount.ToString.PadLeft(4, "0"c),
                 .text = ExtractZString(iNextValidStringAddress),
                 .textWithAbbrevs = ExtractZString(iNextValidStringAddress, True),
                 .entryPoint = iNextValidStringAddress,
-                .entryPointPacked = (iNextValidStringAddress - iSOFF) / scaler
+                .entryPointPacked = (iNextValidStringAddress - iSOFF) \ scaler
             }
             validStringsList.Add(oStringData)
             iNextStringAddress = iNextValidStringAddress + count + 2
@@ -901,6 +867,13 @@ Module Program
         addressGlobalsTableEnd -= 1
         If addressGlobalsTableEnd - addressGlobalsTableStart > 479 Then addressGlobalsTableEnd = addressGlobalsTableStart + 479
         memoryMap.Add(New MemoryMapEntry("Global variables", addressGlobalsTableStart, addressGlobalsTableEnd, MemoryMapType.MM_GLOBAL_VARIABLES))
+
+        ' Save possible addresses of arrays (loadb, loadw, storeb, storew & globals
+        For i As Integer = addressGlobalsTableStart To addressGlobalsTableEnd Step 2
+            oDecode.arraysStart.Add(Helper.GetAdressFromWord(byteStory, i))
+        Next
+        Dim possibleStartOfArrays As List(Of Integer) = oDecode.arraysStart.ToList
+        possibleStartOfArrays.Sort()
 
         ' Find action table
         Dim iAddrActionTable As Integer = 0
@@ -1008,11 +981,70 @@ Module Program
             End If
         End If
 
+        ' Add calls from Action Table, Preaction Table/Parsing Routines Table and properties to ValidRoutinesList
+        If iAddrActionTable > 0 And iAddrPreActionTable > 0 Then
+            Dim actionTable As MemoryMapEntry = memoryMap.Find(Function(c) c.type = MemoryMapType.MM_ACTION_TABLE)
+            Dim actionNum As Integer = 0
+            For i As Integer = actionTable.addressStart To actionTable.addressEnd Step 2
+                Dim address As Integer = Helper.GetAdressFromPacked(byteStory, i, True)
+                Dim oRoutineData As RoutineData = validRoutinesList.Find(Function(c) c.entryPoint = address)
+                If oRoutineData IsNot Nothing Then oRoutineData.callsFrom.Add(String.Concat("Called from action #", actionNum))
+                actionNum += 1
+            Next
+            Dim preactionTable As MemoryMapEntry = memoryMap.Find(Function(c) c.type = MemoryMapType.MM_PREACTION_TABLE)
+            If preactionTable Is Nothing Then preactionTable = memoryMap.Find(Function(c) c.type = MemoryMapType.MM_PREACTION_PARSING_TABLE)
+            If preactionTable IsNot Nothing Then
+                Dim preactionNum As Integer = 0
+                For i As Integer = preactionTable.addressStart To preactionTable.addressEnd Step 2
+                    Dim address As Integer = Helper.GetAdressFromPacked(byteStory, i, True)
+                    Dim oRoutineData As RoutineData = validRoutinesList.Find(Function(c) c.entryPoint = address)
+                    If oRoutineData IsNot Nothing And preactionTable.type = MemoryMapType.MM_PREACTION_TABLE Then oRoutineData.callsFrom.Add(String.Concat("Called from preaction #", preactionNum))
+                    If oRoutineData IsNot Nothing And preactionTable.type = MemoryMapType.MM_PREACTION_PARSING_TABLE Then oRoutineData.callsFrom.Add(String.Concat("Called from parsing routine #", preactionNum))
+                    preactionNum += 1
+                Next
+            End If
+
+            ' Loop through properties
+            Dim iObject As Integer = 0
+            Dim iAddrProperties As Integer = 0
+            Dim iAddrObjectProperties As Integer = 65536
+            Do
+                iAddrProperties = byteStory(iAddrObjectTreeStart + iObject * iObjectTreeEntryLen + 12) * 256 + byteStory(iAddrObjectTreeStart + iObject * iObjectTreeEntryLen + 13)
+                If iZVersion <= 3 Then iAddrProperties = byteStory(iAddrObjectTreeStart + iObject * iObjectTreeEntryLen + 7) * 256 + byteStory(iAddrObjectTreeStart + iObject * iObjectTreeEntryLen + 8)
+                If iAddrProperties < iAddrObjectProperties Then iAddrObjectProperties = iAddrProperties
+                Dim iPropDescLen As Integer = byteStory(iAddrProperties)
+                Dim objectName As String = "no-name"
+                If iPropDescLen > 0 Then objectName = ExtractZString(iAddrProperties + 1, False)
+                Dim iTmpProp As Integer = iAddrProperties + 2 * iPropDescLen + 1
+                Do While byteStory(iTmpProp) <> 0
+                    Dim iPropNum As Integer = 0
+                    Dim iPropSize As Integer = 0
+                    Dim iPropStart As Integer = iTmpProp + 1
+                    Dim sPropData As String = ""
+                    If iZVersion <= 3 Then
+                        iPropNum = (byteStory(iTmpProp) And 31)
+                        iPropSize = 1 + (byteStory(iTmpProp) And 224) \ 32
+                    Else
+                        iPropNum = (byteStory(iTmpProp) And 63)
+                        If (byteStory(iTmpProp) And 128) = 128 Then
+                            iPropSize = (byteStory(iTmpProp + 1) And 63)
+                            iPropStart += 1
+                        Else
+                            If (byteStory(iTmpProp) And 64) = 64 Then iPropSize = 2 Else iPropSize = 1
+                        End If
+                    End If
+                    DecodePropertyData(True, byteStory, DictEntriesList, validStringsList, validRoutinesList, iPropNum, iPropSize, iPropStart, sPropData, iObject, objectName)
+                    iTmpProp = iPropStart + iPropSize
+                Loop
+                iObject += 1
+            Loop Until (iAddrObjectTreeStart + iObject * iObjectTreeEntryLen) >= iAddrObjectProperties
+        End If
+
         ' ***** Add unidentified data fragments *****
         ' A large part of the unidewntified data are table (arrays). There's usually a large chunk in dynamic memory for ordinary
         ' tables (arrays) and a large chunk in static memory for pure tables (static arrays).
         ' Note that Infocom often placec their pure tables first in high memory. It doesn't matter much but
-        ' in a strict modern way of thinking, the ENDLOD is "wrongly" placed. 
+        ' in a strict modern way of thinking, the ENDLOD is "wrongly" placed.
         Dim iAddrStaticMem As Integer = Helper.GetAdressFromWord(byteStory, 14)
         Dim iAddrHighMem As Integer = Helper.GetAdressFromWord(byteStory, 4)
         memoryMap.Sort(Function(x, y) x.addressStart.CompareTo(y.addressStart))     ' Order memory map by start-address
@@ -1562,7 +1594,7 @@ Module Program
                         End If
                     Next
                     If Not createGametext Then
-                        Console.WriteLine(sAttributes.TrimEnd.TrimEnd(","))
+                        Console.WriteLine(sAttributes.TrimEnd.TrimEnd(","c))
                     End If
                     If iZVersion <= 3 Then
                         If Not createGametext Then
@@ -1609,7 +1641,7 @@ Module Program
                             Dim iPropStart As Integer = iTmpProp + 1
                             If iZVersion <= 3 Then
                                 iPropNum = (byteStory(iTmpProp) And 31)
-                                iPropSize = 1 + (byteStory(iTmpProp) And 224) / 32
+                                iPropSize = 1 + (byteStory(iTmpProp) And 224) \ 32
                             Else
                                 iPropNum = (byteStory(iTmpProp) And 63)
                                 If (byteStory(iTmpProp) And 128) = 128 Then
@@ -1644,7 +1676,7 @@ Module Program
                             Console.Write("{0}/{1}", iPropNum, iPropSize)
                             If iPropSize < 10 Then Console.Write(" ")
                             Console.Write(" ")
-                            DecodePropertyData(byteStory, DictEntriesList, validStringsList, validRoutinesList, iPropNum, iPropSize, iPropStart, sPropData)
+                            DecodePropertyData(False, byteStory, DictEntriesList, validStringsList, validRoutinesList, iPropNum, iPropSize, iPropStart, sPropData, iObject, "")
                             iTmpProp = iPropStart + iPropSize
                         Loop
                         Console.WriteLine()
@@ -1755,7 +1787,7 @@ Module Program
                                         sTmp = sTmp & "'" & dictEntry.dictWord & "'/"
                                     End If
                                 Next
-                                sTmp = sTmp.TrimEnd("/").TrimStart()
+                                sTmp = sTmp.TrimEnd("/"c).TrimStart()
                                 Console.Write(sTmp & "]")
                             End If
                             iVerbNum -= 1
@@ -1801,7 +1833,7 @@ Module Program
                         If {EnumCompilerSource.ZILCH, EnumCompilerSource.ZILF}.Contains(compilerSource) Then
                             sTmp &= ">"
                         Else
-                            sTmp = sTmp.TrimEnd("/")
+                            sTmp = sTmp.TrimEnd("/"c)
                         End If
                         Console.WriteLine(sTmp)
 
@@ -2107,7 +2139,7 @@ Module Program
                                 Else
                                     sPS &= "+P1?OBJECT"
                                 End If
-                                sPS = sPS.TrimStart("+")
+                                sPS = sPS.TrimStart("+"c)
                                 If sPS.Contains("PS?VERB") Then sPS = sPS & ", Verb#=" & DictEntriesList(i).VerbNum.ToString
                                 If sPS.Contains("PS?ADJECTIVE") And iZVersion <= 3 Then sPS = sPS & ", Adjective#=" & DictEntriesList(i).AdjNum.ToString
                                 If sPS.Contains("PS?DIRECTION") Then sPS = sPS & ", Direction#=" & DictEntriesList(i).DirNum.ToString
@@ -2126,10 +2158,10 @@ Module Program
                                             Else
                                                 Console.Write(" ")
                                             End If
-                                            If DictEntriesList.v2_PartsOfSpeech.ContainsKey(2 ^ j) Then
-                                                Console.Write(DictEntriesList.v2_PartsOfSpeech(2 ^ j))
-                                                If DictEntriesList.v2_PartsOfSpeech(2 ^ j) = "VERB" Then Console.Write("=0x{0:X4}", DictEntriesList(i).v2_SemanticStuff)
-                                                If DictEntriesList.v2_PartsOfSpeech(2 ^ j) = "DIR" Then Console.Write("=0x{0:X2}", CInt(DictEntriesList(i).v2_SemanticStuff / 256))
+                                            If DictEntriesList.v2_PartsOfSpeech.ContainsKey(CInt(2 ^ j)) Then
+                                                Console.Write(DictEntriesList.v2_PartsOfSpeech(CInt(2 ^ j)))
+                                                If DictEntriesList.v2_PartsOfSpeech(CInt(2 ^ j)) = "VERB" Then Console.Write("=0x{0:X4}", DictEntriesList(i).v2_SemanticStuff)
+                                                If DictEntriesList.v2_PartsOfSpeech(CInt(2 ^ j)) = "DIR" Then Console.Write("=0x{0:X2}", CInt(DictEntriesList(i).v2_SemanticStuff / 256))
                                             Else
                                                 Console.Write("UNKNOWN-PART-OF-SPEECH")
                                             End If
@@ -2163,7 +2195,7 @@ Module Program
                             If (iPS And 4) = 4 Then sPS &= "+<plural>"
                             If (iPS And 2) = 2 Then sPS &= "+<meta>"
                             If (iPS And 1) = 1 Then sPS &= "+<verb>"
-                            sPS = sPS.TrimStart("+")
+                            sPS = sPS.TrimStart("+"c)
                             If sPS.Contains("<verb>") Then sPS = sPS & ", Verb#=" & DictEntriesList(i).VerbNum.ToString
                             If grammarVer = 1 And iV2 > 0 Then sPS = sPS & ", Preposition#=" & DictEntriesList(i).PrepNum.ToString
                             Console.Write(" {0}", sPS)
@@ -2262,6 +2294,18 @@ Module Program
                 Console.WriteLine("***** UNIDENTIFIED DATA ({0:X5}-{1:X5}, {2}) *****", oMemEntry.addressStart, oMemEntry.addressEnd, oMemEntry.SizeString)
                 HexDump(oMemEntry.addressStart, oMemEntry.addressEnd, True)
                 Console.WriteLine()
+                Dim first As Boolean = True
+                For i As Integer = 0 To possibleStartOfArrays.Count - 1
+                    If possibleStartOfArrays(i) >= oMemEntry.addressStart And possibleStartOfArrays(i) < oMemEntry.addressEnd Then
+                        If first Then
+                            Console.WriteLine("Possible starting points for arrays (from absolute addresses in")
+                            Console.WriteLine("opcodes loadw/GET, loadb/GETB, storew/PUT, storeb/PUTB and globals):")
+                            first = False
+                        End If
+                        Console.WriteLine("     0x{0:X5}", possibleStartOfArrays(i))
+                    End If
+                Next
+                If Not first Then Console.WriteLine()
             End If
 
             If oMemEntry.type = MemoryMapType.MM_PADDING And showExtra And Not createGametext Then
@@ -2487,7 +2531,7 @@ Module Program
                     oRet.addrGrammarTableStart = potentialStartAddress
                     oRet.addrGrammarTableEnd = potentialStartAddress + pNumberOfVerbs * 2 - 1
                     oRet.NumberOfActions = iMaxAction + 1
-                    oRet.grammarVer = 1
+                    oRet.grammarVer = EnumGrammarVer.VERSION_1
                     oRet.CompactSyntaxes = compactSyntax
                     oRet.NumberOfVerbs = pNumberOfVerbs
                     Return oRet
@@ -2565,7 +2609,7 @@ Module Program
                     oRet.addrGrammarTableEnd = iIndex + pNumberOfVerbs * 2
                     oRet.addrGrammarTableEnd -= 1
                     oRet.NumberOfActions = iMaxAction + 1
-                    oRet.grammarVer = 2
+                    oRet.grammarVer = EnumGrammarVer.VERSION_2
                     oRet.NumberOfVerbs = pNumberOfVerbs
                     Return oRet
                 End If
@@ -2614,7 +2658,7 @@ Module Program
             oRet.addrGrammarTableEnd = iIndex + pNumberOfVerbs * 2
             oRet.addrGrammarTableEnd -= 1
             oRet.NumberOfActions = iMaxAction + 1
-            oRet.grammarVer = 1
+            oRet.grammarVer = EnumGrammarVer.VERSION_1
             oRet.NumberOfVerbs = pNumberOfVerbs
             Return oRet
         End If
@@ -2735,7 +2779,7 @@ Module Program
         End If
         oRet.NumberOfVerbs = iVerbCount
         oRet.NumberOfActions = iActionCount + 1
-        oRet.grammarVer = 2
+        oRet.grammarVer = EnumGrammarVer.VERSION_2
         pDictEntries.v2_VerbAddresses = VerbList
         Return oRet
     End Function
@@ -2829,10 +2873,10 @@ Module Program
         Dim iLowestPrepNumber As Integer = 256 - pDictList.PrepositionCountUnique
         For i As Integer = iLowestPrepNumber To 255
             Dim oDictEntry As DictionaryEntry = pDictList.GetPreposition(i)(0)      ' There should be only ONE!!!
-            footprintList.Add(oDictEntry.dictAddress >> 8)
-            footprintList.Add(oDictEntry.dictAddress And 255)
+            footprintList.Add(CByte(oDictEntry.dictAddress >> 8))
+            footprintList.Add(CByte(oDictEntry.dictAddress And 255))
             footprintList.Add(0)
-            footprintList.Add(oDictEntry.PrepNum)
+            footprintList.Add(CByte(oDictEntry.PrepNum))
         Next
         Dim iAddr As Integer = 0
         Dim bFound As Boolean
@@ -2858,63 +2902,82 @@ Module Program
 
     Public ZilPropDirectionList As New List(Of Integer)
 
-    Private Sub DecodePropertyData(pStoryData() As Byte, pDictEntries As DictionaryEntries, pStringsList As List(Of StringData), pRoutineList As List(Of RoutineData), pPropNum As Integer, pPropSize As Integer, pPropStart As Integer, pPropData As String)
+    Private Sub DecodePropertyData(silent As Boolean, pStoryData() As Byte, pDictEntries As DictionaryEntries, pStringsList As List(Of StringData), pRoutineList As List(Of RoutineData), pPropNum As Integer, pPropSize As Integer, pPropStart As Integer, pPropData As String, pObjectNum As Integer, pObjectName As String)
+        Dim objectName As String = String.Concat((pObjectNum + 1).ToString, " (", Chr(34), pObjectName, Chr(34), ")")
         If {EnumCompilerSource.ZILCH, EnumCompilerSource.ZILF}.Contains(compilerSource) Then
             If ZilPropDirectionList.Contains(pPropNum) Then
-                For Each oDictEntry As DictionaryEntry In pDictEntries.GetDirection(pPropNum)
-                    If oDictEntry.dictWord.Length > 1 Then
-                        Console.Write("({0} ", oDictEntry.dictWord.ToUpper)
-                        Exit For
-                    End If
-                Next
-                If iZVersion < 4 Then
-                    Select Case pPropSize
-                        Case 1 'UEXIT
-                            Console.Write("TO OBJECT-{0})", pStoryData(pPropStart))
-                        Case 2 'NEXIT
-                            Console.Write("{0}{1}{2})", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart, False), True), Convert.ToChar(34))
-                        Case 3 'FEXIT
-                            Console.Write("PER R{0:X5})", Helper.GetAdressFromPacked(pStoryData, pPropStart, True))
-                        Case 4 'CEXIT - Note that data are in the order: REXIT (byte), CEXITFLAG (byte) & CEXITSTR (word) = 4 bytes 
-                            Console.Write("TO OBJECT-{0} IF GLOBAL-{1}", pStoryData(pPropStart), pStoryData(pPropStart + 1) - 15)
-                            If Helper.GetAdressFromWord(pStoryData, pPropStart + 2) > 0 Then
-                                Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 2, False), showAbbrevsInsertion), Convert.ToChar(34))
-                            End If
-                            Console.Write(")")
-                        Case 5 'DEXIT
-                            Console.Write("TO OBJECT-{0} IF OBJECT-{1} IS OPEN", pStoryData(pPropStart), pStoryData(pPropStart + 1))
-                            If Helper.GetAdressFromWord(pStoryData, pPropStart + 2) > 0 Then
-                                Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 2, False), showAbbrevsInsertion), Convert.ToChar(34))
-                            End If
-                            Console.Write(")")
-                    End Select
-                Else
-                    Select Case pPropSize
-                        Case 2 'UEXIT
-                            Console.Write("TO OBJECT-{0})", Helper.GetAdressFromWord(pStoryData, pPropStart))
-                        Case 3 'NEXIT
-                            Console.Write("{0}{1}{2})", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart, False), showAbbrevsInsertion), Convert.ToChar(34))
-                        Case 4 'FEXIT
-                            Console.Write("PER R{0:X5})", Helper.GetAdressFromPacked(pStoryData, pPropStart, True))
-                        Case 5 'CEXIT - Note that data are in the order: REXIT (word), CEXITSTR (word) & CEXITFLAG (byte) = 5 bytes
-                            Console.Write("TO OBJECT-{0} IF GLOBAL-{1}", Helper.GetAdressFromWord(pStoryData, pPropStart), pStoryData(pPropStart + 4) - 15)
-                            If Helper.GetAdressFromWord(pStoryData, pPropStart + 2) > 0 Then
-                                Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 2, False), showAbbrevsInsertion), Convert.ToChar(34))
-                            End If
-                            Console.Write(")")
-                        Case 6 'DEXIT
-                            Console.Write("TO OBJECT-{0} IF OBJECT-{1} IS OPEN", Helper.GetAdressFromWord(pStoryData, pPropStart), Helper.GetAdressFromWord(pStoryData, pPropStart + 2))
-                            If Helper.GetAdressFromWord(pStoryData, pPropStart + 4) > 0 Then
-                                Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 4, False), showAbbrevsInsertion), Convert.ToChar(34))
-                            End If
-                            Console.Write(")")
-                    End Select
+                If Not silent Then
+                    For Each oDictEntry As DictionaryEntry In pDictEntries.GetDirection(pPropNum)
+                        If oDictEntry.dictWord.Length > 1 Then
+                            Console.Write("({0} ", oDictEntry.dictWord.ToUpper)
+                            Exit For
+                        End If
+                    Next
                 End If
-                Console.WriteLine()
+                If iZVersion < 4 Then
+                    If Not silent Then
+                        Select Case pPropSize
+                            Case 1 'UEXIT
+                                Console.Write("TO OBJECT-{0})", pStoryData(pPropStart))
+                            Case 2 'NEXIT
+                                Console.Write("{0}{1}{2})", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart, False), True), Convert.ToChar(34))
+                            Case 3 'FEXIT
+                                Console.Write("PER Routine at 0x{0:X5})", Helper.GetAdressFromPacked(pStoryData, pPropStart, True))
+                            Case 4 'CEXIT - Note that data are in the order: REXIT (byte), CEXITFLAG (byte) & CEXITSTR (word) = 4 bytes 
+                                Console.Write("TO OBJECT-{0} IF GLOBAL-{1}", pStoryData(pPropStart), pStoryData(pPropStart + 1) - 15)
+                                If Helper.GetAdressFromWord(pStoryData, pPropStart + 2) > 0 Then
+                                    Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 2, False), showAbbrevsInsertion), Convert.ToChar(34))
+                                End If
+                                Console.Write(")")
+                            Case 5 'DEXIT
+                                Console.Write("TO OBJECT-{0} IF OBJECT-{1} IS OPEN", pStoryData(pPropStart), pStoryData(pPropStart + 1))
+                                If Helper.GetAdressFromWord(pStoryData, pPropStart + 2) > 0 Then
+                                    Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 2, False), showAbbrevsInsertion), Convert.ToChar(34))
+                                End If
+                                Console.Write(")")
+                        End Select
+                    Else
+                        Select Case pPropSize
+                            Case 3 'FEXIT
+                                Dim oRoutineData As RoutineData = pRoutineList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(pStoryData, pPropStart))
+                                If oRoutineData IsNot Nothing Then oRoutineData.callsFrom.Add(String.Concat("Called from property #", pPropNum.ToString, " at object #", objectName))
+                        End Select
+                    End If
+                Else
+                    If Not silent Then
+                        Select Case pPropSize
+                            Case 2 'UEXIT
+                                Console.Write("TO OBJECT-{0})", Helper.GetAdressFromWord(pStoryData, pPropStart))
+                            Case 3 'NEXIT
+                                Console.Write("{0}{1}{2})", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart, False), showAbbrevsInsertion), Convert.ToChar(34))
+                            Case 4 'FEXIT
+                                Console.Write("PER Routine at 0x{0:X5})", Helper.GetAdressFromPacked(pStoryData, pPropStart, True))
+                            Case 5 'CEXIT - Note that data are in the order: REXIT (word), CEXITSTR (word) & CEXITFLAG (byte) = 5 bytes
+                                Console.Write("TO OBJECT-{0} IF GLOBAL-{1}", Helper.GetAdressFromWord(pStoryData, pPropStart), pStoryData(pPropStart + 4) - 15)
+                                If Helper.GetAdressFromWord(pStoryData, pPropStart + 2) > 0 Then
+                                    Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 2, False), showAbbrevsInsertion), Convert.ToChar(34))
+                                End If
+                                Console.Write(")")
+                            Case 6 'DEXIT
+                                Console.Write("TO OBJECT-{0} IF OBJECT-{1} IS OPEN", Helper.GetAdressFromWord(pStoryData, pPropStart), Helper.GetAdressFromWord(pStoryData, pPropStart + 2))
+                                If Helper.GetAdressFromWord(pStoryData, pPropStart + 4) > 0 Then
+                                    Console.Write(" ELSE {0}{1}{2}", Convert.ToChar(34), ExtractZString(Helper.GetAdressFromPacked(pStoryData, pPropStart + 4, False), showAbbrevsInsertion), Convert.ToChar(34))
+                                End If
+                                Console.Write(")")
+                        End Select
+                    Else
+                        Select Case pPropSize
+                            Case 4 'FEXIT
+                                Dim oRoutineData As RoutineData = pRoutineList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(pStoryData, pPropStart))
+                                If oRoutineData IsNot Nothing Then oRoutineData.callsFrom.Add(String.Concat("Called from property #", pPropNum.ToString, " at object #", objectName))
+                        End Select
+                    End If
+                End If
+                If Not silent Then Console.WriteLine()
             Else
                 If pDictEntries.GetDirection(pPropNum).Count > 0 Then
                     ZilPropDirectionList.Add(pPropNum)
-                    DecodePropertyData(pStoryData, pDictEntries, pStringsList, pRoutineList, pPropNum, pPropSize, pPropStart, pPropData)
+                    DecodePropertyData(silent, pStoryData, pDictEntries, pStringsList, pRoutineList, pPropNum, pPropSize, pPropStart, pPropData, pObjectNum, pObjectName)
                     Exit Sub
                 End If
                 ' Length = 2, Check is Routine, String or Word (in that order)
@@ -2923,11 +2986,12 @@ Module Program
                     Dim oStringData As StringData = pStringsList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(pStoryData, pPropStart))
                     Dim oRoutineData As RoutineData = pRoutineList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(pStoryData, pPropStart))
                     If oStringData IsNot Nothing Then
-                        Console.WriteLine("(PROP-{0} {1}{2}{3})", pPropNum, Convert.ToChar(34), oStringData.GetText(showAbbrevsInsertion), Convert.ToChar(34))
+                        If Not silent Then Console.WriteLine("(PROP#{0} {1}{2}{3})", pPropNum, Convert.ToChar(34), oStringData.GetText(showAbbrevsInsertion), Convert.ToChar(34))
                         Exit Sub
                     End If
                     If oRoutineData IsNot Nothing Then
-                        Console.WriteLine("(PROP-{0} R{1:X5})", pPropNum, oRoutineData.entryPoint)
+                        If Not silent Then Console.WriteLine("(PROP#{0} Routine at 0x{1:X5})", pPropNum, oRoutineData.entryPoint)
+                        If silent Then oRoutineData.callsFrom.Add(String.Concat("Called from property #", pPropNum.ToString, " at object #", objectName))
                         Exit Sub
                     End If
                 End If
@@ -2941,11 +3005,13 @@ Module Program
                         End If
                     Next
                     If bValidWords Then
-                        Console.Write("(PROP-{0}", pPropNum)
-                        For i As Integer = 0 To pPropSize - 2 Step 2
-                            Console.Write(" {0}", pDictEntries.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, pPropStart + i)).dictWord.ToUpper)
-                        Next
-                        Console.WriteLine(")")
+                        If Not silent Then
+                            Console.Write("(PROP#{0}", pPropNum)
+                            For i As Integer = 0 To pPropSize - 2 Step 2
+                                Console.Write(" {0}", pDictEntries.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, pPropStart + i)).dictWord.ToUpper)
+                            Next
+                            Console.WriteLine(")")
+                        End If
                         Exit Sub
                     End If
                 End If
@@ -2961,18 +3027,21 @@ Module Program
                         End If
                     Next
                     If bValidPseudo Then
-                        Console.Write("(PSEUDO")
-                        For i As Integer = 0 To pPropSize - 4 Step 4
-                            Dim iIdx As Integer = pPropStart + i + 2
-                            Dim oRoutineData As RoutineData = pRoutineList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(byteStory, iIdx))
-                            Console.Write(" {0}{1}{2}", Convert.ToChar(34), pDictEntries.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, pPropStart + i)).dictWord.ToUpper, Convert.ToChar(34))
-                            Console.Write(" R{0:X5}", oRoutineData.entryPoint)
-                        Next
-                        Console.WriteLine(")")
+                        If Not silent Then
+                            Console.Write("(PSEUDO")
+                            For i As Integer = 0 To pPropSize - 4 Step 4
+                                Dim iIdx As Integer = pPropStart + i + 2
+                                Dim oRoutineData As RoutineData = pRoutineList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(byteStory, iIdx))
+                                If Not silent Then Console.Write(" {0}{1}{2}", Convert.ToChar(34), pDictEntries.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, pPropStart + i)).dictWord.ToUpper, Convert.ToChar(34))
+                                If Not silent Then Console.Write(" Routine at 0x{0:X5}", oRoutineData.entryPoint)
+                                If oRoutineData IsNot Nothing And silent Then oRoutineData.callsFrom.Add(String.Concat("Called from property #", pPropNum.ToString, " at object #", objectName))
+                            Next
+                            Console.WriteLine(")")
+                        End If
                         Exit Sub
                     End If
                 End If
-                Console.WriteLine("Data = {0}", pPropData)
+                If Not silent Then Console.WriteLine("PROP#{0} Data = {1}", pPropNum, pPropData)
             End If
         ElseIf {EnumCompilerSource.INFORM5, EnumCompilerSource.INFORM6}.Contains(compilerSource) Then
             ' Length = 2, Check is Routine, String or Word (in that order)
@@ -2981,11 +3050,12 @@ Module Program
                 Dim oStringData As StringData = pStringsList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(pStoryData, pPropStart))
                 Dim oRoutineData As RoutineData = pRoutineList.Find(Function(c) c.entryPointPacked = Helper.GetAdressFromWord(pStoryData, pPropStart))
                 If oStringData IsNot Nothing Then
-                    Console.WriteLine("prop-{0} {1}{2}{3}", pPropNum, Convert.ToChar(34), oStringData.GetText(showAbbrevsInsertion), Convert.ToChar(34))
+                    If Not silent Then Console.WriteLine("prop#{0} {1}{2}{3}", pPropNum, Convert.ToChar(34), oStringData.GetText(showAbbrevsInsertion), Convert.ToChar(34))
                     Exit Sub
                 End If
                 If oRoutineData IsNot Nothing Then
-                    Console.WriteLine("prop-{0} R{1:X5}", pPropNum, oRoutineData.entryPoint)
+                    If Not silent Then Console.WriteLine("prop#{0} Routine at 0x{1:X5}", pPropNum, oRoutineData.entryPoint)
+                    If silent Then oRoutineData.callsFrom.Add(String.Concat("Called from property #", pPropNum.ToString, " at object #", objectName))
                     Exit Sub
                 End If
             End If
@@ -2998,17 +3068,19 @@ Module Program
                     End If
                 Next
                 If bValidWords Then
-                    Console.Write("prop-{0}", pPropNum)
-                    For i As Integer = 0 To pPropSize - 2 Step 2
-                        Console.Write(" '{0}'", pDictEntries.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, pPropStart + i)).dictWord)
-                    Next
-                    Console.WriteLine()
+                    If Not silent Then
+                        Console.Write("prop#{0}", pPropNum)
+                        For i As Integer = 0 To pPropSize - 2 Step 2
+                            Console.Write(" '{0}'", pDictEntries.GetEntryAtAddress(Helper.GetAdressFromWord(byteStory, pPropStart + i)).dictWord)
+                        Next
+                        Console.WriteLine()
+                    End If
                     Exit Sub
                 End If
-                Console.WriteLine("Data = {0}", pPropData)
+                If Not silent Then Console.WriteLine("prop#{0} Data = {1}", pPropNum, pPropData)
             End If
         Else
-            Console.WriteLine("Data = {0}", pPropData)
+            If Not silent Then Console.WriteLine("prop#{0} Data = {1}", pPropNum, pPropData)
         End If
     End Sub
 
